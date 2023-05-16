@@ -1,7 +1,5 @@
 package com.atguigu.app.func;
 
-
-
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONObject;
 import com.atguigu.common.GmallConfig;
@@ -24,6 +22,7 @@ import java.util.Set;
  * @Version 1.2
  */
 public class DimSinkFunction extends RichSinkFunction<JSONObject> {
+
 
 
 

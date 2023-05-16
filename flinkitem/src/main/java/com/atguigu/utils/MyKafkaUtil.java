@@ -1,7 +1,6 @@
 package com.atguigu.utils;
 
-import akka.stream.impl.FanIn;
-import com.alibaba.fastjson.JSONObject;
+
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.typeinfo.BasicTypeInfo;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -72,5 +71,7 @@ public class MyKafkaUtil {
 
 
     }
+
+
 
 }
