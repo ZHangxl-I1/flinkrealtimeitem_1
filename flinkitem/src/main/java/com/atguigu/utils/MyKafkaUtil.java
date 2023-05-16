@@ -2,6 +2,7 @@ package com.atguigu.utils;
 
 
 import org.apache.flink.api.common.serialization.DeserializationSchema;
+import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.typeinfo.BasicTypeInfo;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.connector.kafka.source.KafkaSource;
@@ -62,6 +63,13 @@ public class MyKafkaUtil {
 
     }
 
+    //单主题写入kafka
+    public static FlinkKafkaProducer<String> getFlinkKafkaProducer(String topic){
+        return new FlinkKafkaProducer<>(BOOTSTRAP_SERVER,topic,new SimpleStringSchema());
+    }
+
+
+
     //写入kafka主题
     public static <T>FlinkKafkaProducer<T>  getFlinkKafkaProducer(KafkaSerializationSchema<T> kafkaSerializationSchema){
 
@@ -72,6 +80,56 @@ public class MyKafkaUtil {
 
     }
 
+    //创建kafka读取topic_db数据后创建的表  普通的kafka连接
+    //将消费组id当参数传进来
+    public static String getTopicDbDDL(String groupId){
+
+        return "CREATE TABLE topic_db (\n" +
+                "  `database` String,\n" +
+                "  `table` String,\n" +
+                "  `type` String,\n" +
+                "  `data` Map<String,String>,\n" +
+                "  `old` Map<String,String>,\n" +
+                "  `pt` as proctime()\n" +
+                ") "+getKafkaSoourceConnOption("topic_db",groupId);
+
+    }
+    //kafka的配置信息
+    public static String getKafkaSoourceConnOption(String topic,String groupId){
+
+        return "WITH (\n" +
+                "  'connector' = 'kafka',\n" +
+                "  'topic' = '"+topic+"',\n" +
+                "  'properties.bootstrap.servers' = '"+BOOTSTRAP_SERVER+"',\n" +
+                "  'properties.group.id' = '"+groupId+"',\n" +
+                "  'scan.startup.mode' = 'latest-offset',\n" +
+                "  'format' = 'json'\n" +
+                ")";
+
+    }
+
+    //kafka配置信息
+    public static String getKafkaSinkConnOption(String topic){
+
+        return "WITH (\n" +
+                "  'connector' = 'kafka',\n" +
+                "  'topic' = '"+topic+"',\n" +
+                "  'properties.bootstrap.servers' = '"+BOOTSTRAP_SERVER+"',\n" +
+                "  'format' = 'json'\n" +
+                ")";
+
+    }
+
+    //upsert kafka配置信息
+    public static String getUpsertKafkaSinkConnOption(String topic){
+        return "WITH (\n" +
+                "  'connector' = 'upsert-kafka',\n" +
+                "  'topic' = '"+topic+"',\n" +
+                "  'properties.bootstrap.servers' = '"+BOOTSTRAP_SERVER+"',\n" +
+                "  'key.format' = 'json',\n" +
+                "  'value.format' = 'json'\n" +
+                ")";
+    }
 
 
 }

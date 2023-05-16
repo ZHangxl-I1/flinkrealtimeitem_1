@@ -3,7 +3,7 @@ package com.atguigu.app.func;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONObject;
 import com.atguigu.bean.TableProcess;
-import com.atguigu.common.GmallConfig;
+import com.atguigu.common.EDUConfig;
 import com.atguigu.utils.DruidDSUtil;
 import com.atguigu.utils.JdbcUtil;
 import org.apache.flink.api.common.state.BroadcastState;
@@ -159,7 +159,7 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
             //phoenix建表语句create table if not exists db.sinkTable(id varchar primary key,name varchar,sex varchar) xxx
 
             StringBuilder createTableSql = new StringBuilder("create table if not exists ")
-                    .append(GmallConfig.HBASE_SCHEMA)
+                    .append(EDUConfig.HBASE_SCHEMA)
                     .append(".")
                     .append(sinkTable)
                     .append("(");

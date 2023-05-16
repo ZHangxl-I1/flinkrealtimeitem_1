@@ -2,7 +2,7 @@ package com.atguigu.app.func;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONObject;
-import com.atguigu.common.GmallConfig;
+import com.atguigu.common.EDUConfig;
 import com.atguigu.utils.DruidDSUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
@@ -61,7 +61,7 @@ public class DimSinkFunction extends RichSinkFunction<JSONObject> {
         Collection<Object> values = data.values();
 
         //sql语句 upsert into database.table(id,namem,sex) values('1002','zzs','male')
-        return "upsert into "+ GmallConfig.HBASE_SCHEMA+"."+sinkTable+"("+ StringUtils.join(columns,",")+") values ('"+StringUtils.join(values,"','")+"')";
+        return "upsert into "+ EDUConfig.HBASE_SCHEMA+"."+sinkTable+"("+ StringUtils.join(columns,",")+") values ('"+StringUtils.join(values,"','")+"')";
 
 
     }

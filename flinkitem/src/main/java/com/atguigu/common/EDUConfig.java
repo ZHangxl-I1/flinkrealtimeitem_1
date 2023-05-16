@@ -9,7 +9,7 @@ package com.atguigu.common;
  * @Create 2023/4/26 15:41
  * @Version 1.2
  */
-public class GmallConfig {
+public class EDUConfig {
     // Phoenix库名
     public static final String HBASE_SCHEMA = "EDU221109REALTIME";
 
@@ -37,6 +37,8 @@ public class GmallConfig {
     public static final String ACTION_TOPIC = "dwd_traffic_action_log";
     //错误
     public static final String ERROR_TOPIC = "dwd_traffic_error_log";
+    //播放
+    public static final String APPVIDEO_TOPIC = "dwd_traffic_appVideo_log";
 
 
 
