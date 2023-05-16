@@ -58,6 +58,8 @@ public class DimApp {
 
         DataStreamSource<String> kafkaDS = env.fromSource(MyKafkaUtil.getKafkaSource("topic_db", "dim_app"), WatermarkStrategy.noWatermarks(), "kafka-source");
 
+        kafkaDS.print("kafkaDS>>>>");
+
 
         SingleOutputStreamOperator<JSONObject> jsonObjDS = kafkaDS.flatMap(new FlatMapFunction<String, JSONObject>() {
             @Override
@@ -78,7 +80,7 @@ public class DimApp {
         });
         jsonObjDS.print("jsonObjDS>>>>");
 
-        MySqlSource<String> mySqlSource = MyFlinkCDCUtil.getMySqlSource("edu_config", "edu.table_process");
+        MySqlSource<String> mySqlSource = MyFlinkCDCUtil.getMySqlSource("edu_config", "edu_config.table_process");
 
         DataStreamSource<String> mysqlDS = env.fromSource(mySqlSource, WatermarkStrategy.noWatermarks(), "mysql-source");
 

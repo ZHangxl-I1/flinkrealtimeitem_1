@@ -10,10 +10,7 @@ import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsIni
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
 
-import javax.annotation.Nullable;
-import javax.crypto.interfaces.PBEKey;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -29,7 +26,7 @@ import java.util.Properties;
 public class MyKafkaUtil {
 
 
-    private static  String BOOTSTRAP_SERVER = "hadoop102:9092";
+    private static  String BOOTSTRAP_SERVER = "hadoop104:9092";
 
     public static KafkaSource<String> getKafkaSource(String topic,String groupId) {
 

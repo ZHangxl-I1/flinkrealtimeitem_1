@@ -45,12 +45,13 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
     public void open(Configuration parameters) throws Exception {
         tableProcessHashMap = new HashMap<>();
 
-        Connection connection = DriverManager.getConnection("jdbc:mysql://hadoop102:3306/edu_config?\" +\n" +
-                "                \"user=root&password=000000&useUnicode=true&\" +\n" +
-                "                \"characterEncoding=utf8&serverTimeZone=Asia/Shanghai&useSSL=false");
+        Connection connection = DriverManager.getConnection("jdbc:mysql://hadoop102:3306/edu_config?" +
+                "user=root&password=000000&useUnicode=true&" +
+                "characterEncoding=utf8&serverTimeZone=Asia/Shanghai&useSSL=false");
 
         String sql = "select * from table_process";
         List<TableProcess> tableProcesses = JdbcUtil.querList(connection, sql, TableProcess.class, true);
+
 
 
         for (TableProcess tableProcess : tableProcesses) {
@@ -173,16 +174,17 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
                 if (sinkPk.equals(columns)) {
                     createTableSql.append(columns).append(" varchar primary key");
                 } else {
-                    createTableSql.append(columns).append("varchar");
+                    createTableSql.append(columns).append(" varchar");
                 }
 
-                if (i < columns.length() - 1) {
+                if (i < columnsArr.length - 1) {
                     createTableSql.append(",");
                 } else {
                     createTableSql.append(") ").append(sinkExtend);
                 }
 
             }
+            System.out.println("建表createTableSql>>"+createTableSql);
 
             //预编sql
             preparedStatement = phoenixConn.prepareStatement(createTableSql.toString());

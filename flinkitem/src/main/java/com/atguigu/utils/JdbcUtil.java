@@ -71,7 +71,7 @@ public class JdbcUtil {
     public static void main(String[] args) throws Exception {
 
 
-        Connection connection = DriverManager.getConnection("jdbc:mysql://hadoop102:3306/gmall_config?" +
+        Connection connection = DriverManager.getConnection("jdbc:mysql://Ahadoop102:3306/edu_config?" +
                 "user=root&password=000000&useUnicode=true&" +
                 "characterEncoding=utf8&serverTimeZone=Asia/Shanghai&useSSL=false");
 
