@@ -184,6 +184,22 @@ public class BaseLogApp {
             @Override
             public void processElement(JSONObject value, ProcessFunction<JSONObject, String>.Context ctx, Collector<String> out) throws Exception {
 
+                //common
+                /**
+                 *  "common": {
+                 *     "ar": "1",
+                 *     "ba": "Redmi",
+                 *     "ch": "wandoujia",
+                 *     "is_new": "1",
+                 *     "md": "Redmi k30",
+                 *     "mid": "mid_356",
+                 *     "os": "Android 11.0",
+                 *     "sc": "2",
+                 *     "sid": "76909678-abaf-41c4-916d-a0a72f546bc1",
+                 *     "uid": "161",
+                 *     "vc": "v2.1.134"
+                 *   },
+                 */
 
                 //尝试获取错误信息
                 String err = value.getString("err");
@@ -200,6 +216,14 @@ public class BaseLogApp {
                     ctx.output(startTag, value.toJSONString());
                     value.remove("start");
                     //尝试获取播放数据
+                    /**
+                     * {
+                     *   "appVideo": {						--视频信息
+                     *     "play_sec": 19,					--播放时长
+                     * "position_sec":390,				--播放进度
+                     *     "video_id": "3904"				--视频id
+                     *   }
+                     */
                 } else if (appVideo!=null){
                         ctx.output(appVideoTag, value.toJSONString());
                         value.remove("appVideo");
