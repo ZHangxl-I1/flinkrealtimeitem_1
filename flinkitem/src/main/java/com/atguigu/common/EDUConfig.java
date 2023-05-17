@@ -43,32 +43,28 @@ public class EDUConfig {
 
 
     //dwd
-    //交易域加购事务事实表
-    public static final String DWD_TRADE_CART_INFO = "dwd_trade_cart_info";
     //交易域下单事务事实表
     public static final String DWD_TRADE_ORDER_DETAIL = "dwd_trade_order_detail";
-    //交易域取消订单事务事实表
-    public static final String DWD_TRADE_CANCEL_DETAIL = "dwd_trade_cancel_detail";
     //交易域支付成功事务事实表
     public static final String DWD_TRADE_PAY_DETAIL_SUC = "dwd_trade_pay_detail_suc";
-    //交易域退单事务事实表
-    public static final String DWD_TRADE_ORDER_REFUND = "dwd_trade_order_refund";
-    //交易域退款成功事务事实表
-    public static final String DWD_TRADE_REFUND_PAY_SUC = "dwd_trade_refund_pay_suc";
+
+
+    //课程域完成测验事实表
+    public static final String DWD_TEST_EXAM = "dwd_test_exam";
 
 
 
     //dwd层其他六张事实表主题
-    //工具域优惠券领取事务事实表
-    public static final String DWD_TOOL_COUPON_GET = "dwd_tool_coupon_get";
-    //工具域优惠券使用事务事实表
-    public static final String DWD_TOOL_COUPON_USE = "dwd_tool_coupon_use";
-    //互动域收藏商品事务事实表
+    //收藏
     public static final String DWD_INTERACTION_FAVOR_ADD = "dwd_interaction_favor_add";
-    //互动域评价事务事实表
-    public static final String DWD_INTERACTION_COMMENT = "dwd_interaction_comment";
-    //用户域用户注册事务事实表
+    //课程评价
+    public static final String DWD_REVIEW_ADD = "dwd_review_add";
+    //评价
+    public static final String dwd_interaction_comment_add = "dwd_interaction_comment_add";
+    //用户注册
     public static final String DWD_USER_REGISTER = "dwd_user_register";
+    //vip
+    public static final String DWD_VIP_CHANGE_DETAIL_ADD = "dwd_vip_change_detail_add";
 
 
 
