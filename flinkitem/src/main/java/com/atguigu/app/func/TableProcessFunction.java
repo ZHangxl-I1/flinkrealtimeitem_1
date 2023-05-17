@@ -50,7 +50,7 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
                 "characterEncoding=utf8&serverTimeZone=Asia/Shanghai&useSSL=false");
 
         String sql = "select * from table_process";
-        List<TableProcess> tableProcesses = JdbcUtil.querList(connection, sql, TableProcess.class, true);
+        List<TableProcess> tableProcesses = JdbcUtil.queryList(connection, sql, TableProcess.class, true);
 
 
 

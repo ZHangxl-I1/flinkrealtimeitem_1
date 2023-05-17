@@ -16,7 +16,10 @@ import java.time.Duration;
  * @Create 2023/5/17 9:03
  * @Version 1.0
  */
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
 public class Dwd31_TestPaper {
 
     public static void main(String[] args) throws Exception {
@@ -76,7 +79,11 @@ public class Dwd31_TestPaper {
                 ")  " +
                 "with( " +
                 "  'connector' = 'jdbc', " +
+<<<<<<< HEAD
                 "  'url' = 'jdbc:mysql://hadoop102:3306/edu', " +
+=======
+                "  'url' = 'jdbc:mysql://hadoop102:3306/edu-flink', " +
+>>>>>>> origin/master
                 "  'table-name' = 'test_paper', " +
                 "  'username' = 'root', " +
                 "  'password' = '000000' " +

@@ -14,7 +14,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
  * @Create 2023/5/16 20:50
  * @Version 1.0
  */
-public class Dwd03_ChapterComment {
+public class TrafficChapterComment {
     public static void main(String[] args) {
         //TODO 1.获取执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();

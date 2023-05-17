@@ -21,7 +21,7 @@ public class JdbcUtil {
 
     //将数据存放在List<任意类型>里
 
-    public static <T> List<T> querList(Connection connection, String sql, Class<T> clz, Boolean underSourceToCamel) throws Exception {
+    public static <T> List<T> queryList(Connection connection, String sql, Class<T> clz, Boolean underSourceToCamel) throws Exception {
 
 
         ArrayList<T> list = new ArrayList<>();
@@ -76,7 +76,7 @@ public class JdbcUtil {
                 "characterEncoding=utf8&serverTimeZone=Asia/Shanghai&useSSL=false");
 
         String sql = "select * from table_process";
-        List<TableProcess> tableProcesses = querList(connection, sql, TableProcess.class, true);
+        List<TableProcess> tableProcesses = queryList(connection, sql, TableProcess.class, true);
 
         for (TableProcess tableProcess : tableProcesses) {
             System.out.println(tableProcess);

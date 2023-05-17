@@ -17,8 +17,6 @@ import java.time.Duration;
  * @Version 1.2
  */
 public class TradeOrderDetail {
-
-
     public static void main(String[] args) {
 
         //执行环境
