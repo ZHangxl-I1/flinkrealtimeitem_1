@@ -43,6 +43,10 @@ public class EDUConfig {
 
 
     //dwd
+    //互动域课程评价事实事务表
+    public static final String DWD_COURSE_REVIEW = "dwd_course_review";
+    //互动域章节评价事实事务表
+    public static final String DWD_CHAPTER_COMMNET = "dwd_chapter_commnet";
     //交易域下单事务事实表
     public static final String DWD_TRADE_ORDER_DETAIL = "dwd_trade_order_detail";
     //交易域支付成功事务事实表
