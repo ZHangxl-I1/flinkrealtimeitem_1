@@ -213,9 +213,10 @@ public class TradeProvinceOrderWindow {
                 }, 60, TimeUnit.SECONDS);
         //TODO 8.将数据写出
         tradeProvinceWithDimDS.print(">>>>>>>>>");
+
         tradeProvinceWithDimDS.addSink(MyClickHouseUtil.getSinkFunction("insert into dws_trade_province_order_window " +
                 "values(?,?,?,?,?,?,?,?)"));
         //TODO 9.启动任务
-        env.execute("Dws10_TradeProvinceOrderWindow");
+        env.execute("Dws_TradeProvinceOrderWindow");
     }
 }
