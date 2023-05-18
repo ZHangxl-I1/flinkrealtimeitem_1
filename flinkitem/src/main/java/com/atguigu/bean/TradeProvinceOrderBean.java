@@ -10,7 +10,7 @@ import java.util.HashSet;
 @Data
 @AllArgsConstructor
 @Builder
-public class TradeProvinceOrderWindow {
+public class TradeProvinceOrderBean {
     // 窗口起始时间
     String stt;
 
@@ -29,10 +29,15 @@ public class TradeProvinceOrderWindow {
     HashSet<String> orderIds;
 
     // 累计下单次数
-    Long orderCount;
+    @Builder.Default
+    Long orderCount=0L;
+    //用户id
+    @TransientSink
+    String userID;
 
     // 累计下单人数
-    Long userCount;
+    @Builder.Default
+    Long userCount = 0L;
 
     // 累计下单金额
     BigDecimal orderAmount;
