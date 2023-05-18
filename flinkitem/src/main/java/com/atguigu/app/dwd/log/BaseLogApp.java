@@ -214,7 +214,7 @@ public class BaseLogApp {
                 String appVideo = value.getString("appVideo");
                 if (start != null) {
                     ctx.output(startTag, value.toJSONString());
-                    value.remove("start");
+//                    value.remove("start");
                     //尝试获取播放数据
                     /**
                      * {
@@ -226,7 +226,7 @@ public class BaseLogApp {
                      */
                 } else if (appVideo!=null){
                         ctx.output(appVideoTag, value.toJSONString());
-                        value.remove("appVideo");
+//                        value.remove("appVideo");
                 } else{
                     /**
                      * "page": {							--页面信息

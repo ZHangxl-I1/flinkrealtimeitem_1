@@ -78,7 +78,7 @@ public class DimApp {
 
             }
         });
-        jsonObjDS.print("jsonObjDS>>>>");
+//        jsonObjDS.print("jsonObjDS>>>>");
 
         MySqlSource<String> mySqlSource = MyFlinkCDCUtil.getMySqlSource("edu_config", "edu_config.table_process");
 
