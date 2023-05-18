@@ -223,6 +223,16 @@ public class TrafficSourceWindow02 {
 
                         value1.setSvCt(value1.getSvCt() + value2.getSvCt());
 
+                        Long pageOne=0L;
+                        if (value1.getPageCt()==1L){
+                            pageOne++;
+                        }
+
+                        if (value2.getPageCt()==1L){
+                            pageOne=pageOne+1;
+                        }
+                        value1.setPageOneCt(pageOne);
+
                         value1.setPageOneCt(value1.getPageOneCt()+value2.getPageOneCt());
 
                         value1.setPageCt(value1.getPageCt() + value2.getPageCt());
