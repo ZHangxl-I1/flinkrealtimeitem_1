@@ -203,7 +203,6 @@ public class TrafficSourceWindow02 {
 
         });
 
-        
 
 
         SingleOutputStreamOperator<TrafficSourceBean> reduceDS = trafficSourcePageIdDS.assignTimestampsAndWatermarks(WatermarkStrategy.<TrafficSourceBean>forBoundedOutOfOrderness(Duration.ofSeconds(2)).withTimestampAssigner(new SerializableTimestampAssigner<TrafficSourceBean>() {

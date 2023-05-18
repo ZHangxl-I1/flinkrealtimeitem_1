@@ -78,7 +78,7 @@ public class DimApp {
 
             }
         });
-        jsonObjDS.print("jsonObjDS>>>>");
+
 
         MySqlSource<String> mySqlSource = MyFlinkCDCUtil.getMySqlSource("edu_config", "edu_config.table_process");
 
@@ -112,7 +112,6 @@ public class DimApp {
 
         //dim写入hbase
       processDS.getSideOutput(hbaseDS).addSink(new DimSinkFunction());
-
 
       env.execute();
 
