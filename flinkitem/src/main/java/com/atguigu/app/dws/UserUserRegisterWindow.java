@@ -22,7 +22,7 @@ import org.apache.flink.util.Collector;
 import java.time.Duration;
 
 
-public class Dws_UserUserRegisterWindow {
+public class UserUserRegisterWindow {
 
     public static void main(String[] args) throws Exception {
 

@@ -26,7 +26,7 @@ import org.apache.flink.util.Collector;
 
 import java.time.Duration;
 
-public class Dws_UserUserLoginWindow {
+public class UserUserLoginWindow {
 
     public static void main(String[] args) throws Exception {
 
