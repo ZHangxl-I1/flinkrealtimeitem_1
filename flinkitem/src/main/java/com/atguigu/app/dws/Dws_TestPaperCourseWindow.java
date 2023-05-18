@@ -25,7 +25,10 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
- 试卷 考试人数/平均分/平均时长 主类：TestPaperBean
+ 试卷 考试人数/平均分/平均时长
+ 课程 考试人数/平均分/平均时长
+ 主类：TestPaperBean
+
  --ClickHouse建表语句
  drop table if exists dws_test_paper_course_window;
  create table if not exists dws_test_paper_course_window
@@ -45,8 +48,6 @@ import java.util.concurrent.TimeUnit;
  order by (stt, edt, paper_id, course_id);
 
  {"id":"14384","paper_id":"661","user_id":"86","score":"45.0","duration_sec":"901","create_time":"2023-05-18 09:27:58","paper_title":"Java基础测试","course_id":39}
-
- 课程 考试人数/平均分/平均时长
 
  试卷-分数段 人数
  题目 正确答题次数/答题次数/正确率/正确答题独立用户数/答题独立用户数/正确答题用户占比
