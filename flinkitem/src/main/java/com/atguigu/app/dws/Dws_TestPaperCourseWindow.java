@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
 
 //数据流：web/app -> Mysql -> Maxwell -> Kafka(ODS) -> FlinkApp -> Kafka(DWD) -> FlinkApp -> ClickHouse(DWS)
 //程 序：Mock -> Mysql -> Maxwell -> Kafka(ZK) -> Dwd31_TestPaper -> Kafka(ZK) -> Dws31_TestPaperWindow -> ClickHouse(ZK)
-public class Dws31_TestPaperCourseWindow {
+public class Dws_TestPaperCourseWindow {
     public static void main(String[] args) throws Exception {
 
         //TODO 1.获取执行环境

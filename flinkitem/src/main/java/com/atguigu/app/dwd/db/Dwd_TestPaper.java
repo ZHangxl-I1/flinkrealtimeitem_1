@@ -6,28 +6,32 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
 import java.time.Duration;
+import java.time.ZoneId;
 
 /**
  * ClassName: Dwd31_TestPaper
  * Package: com.atguigu.app.dwd.db
- * Description: 学习域 测验试卷 粒度 事务事实表
+ * Description: 学习域测验试卷事务事实表 粒度为一次测验考试，主表test_exam，关联外部MySQL表test_paper，维度退化得到paper_title、course_id
  *
- * @Author NoahZhang
- * @Create 2023/5/17 9:03
+ * @Author NoahZH
+ * @Create 2023/5/16 20:01
  * @Version 1.0
  */
-<<<<<<< HEAD
 
-=======
->>>>>>> origin/master
-public class Dwd31_TestPaper {
-
+//数据流：web/app -> Mysql -> Maxwell -> Kafka(ODS) -> FlinkApp -> Kafka(DWD)
+//程 序：Mock -> Mysql -> Maxwell -> Kafka(ZK) -> Dwd31_TestPaper -> Kafka(ZK)
+//业务数据库edu-flink -> edu-flink-flink
+public class Dwd_TestPaper {
     public static void main(String[] args) throws Exception {
+
 
         //TODO 1.获取执行环境   注意设置TTL
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
         StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
+
+        // 设定 Table 中的时区为本地时区
+        tableEnv.getConfig().setLocalTimeZone(ZoneId.of("GMT+8"));
 
 //        tableEnv.getConfig().getConfiguration().setString("table.exec.state.ttl", "5s");
         tableEnv.getConfig().setIdleStateRetention(Duration.ofSeconds(5));
@@ -42,7 +46,7 @@ public class Dwd31_TestPaper {
 //                10, Time.of(1L, TimeUnit.DAYS), Time.of(3L, TimeUnit.MINUTES)
 //        ));
 //        env.setStateBackend(new HashMapStateBackend());
-//        env.getCheckpointConfig().setCheckpointStorage("hdfs://hadoop102:8020/edu/ck");
+//        env.getCheckpointConfig().setCheckpointStorage("hdfs://hadoop102:8020/edu-flink/ck");
 //        System.setProperty("HADOOP_USER_NAME", "atguigu");
 
         //TODO 2.读取Kafka topic_db 主题数据
@@ -79,18 +83,29 @@ public class Dwd31_TestPaper {
                 ")  " +
                 "with( " +
                 "  'connector' = 'jdbc', " +
-<<<<<<< HEAD
-                "  'url' = 'jdbc:mysql://hadoop102:3306/edu', " +
-=======
                 "  'url' = 'jdbc:mysql://hadoop102:3306/edu-flink', " +
->>>>>>> origin/master
                 "  'table-name' = 'test_paper', " +
                 "  'username' = 'root', " +
                 "  'password' = '000000' " +
                 ")");
 
         //测试OK
-        tableEnv.sqlQuery("select * from test_paper").execute().print();
+//        tableEnv.sqlQuery("select * from test_paper").execute().print();
+
+//        //TODO 5.读取MySQL course_info表 获取course_name
+//        tableEnv.executeSql("" +
+//                "create table course_info(\n" +
+//                "    id bigint,\n" +
+//                "    course_name string,\n" +
+//                "    primary key (id) not enforced\n" +
+//                ") \n" +
+//                "with(\n" +
+//                "  'connector' = 'jdbc',\n" +
+//                "  'url' = 'jdbc:mysql://hadoop102:3306/edu-flink',\n" +
+//                "  'table-name' = 'course_info',\n" +
+//                "  'username' = 'root',\n" +
+//                "  'password' = '000000'\n" +
+//                ")");
 
         //TODO 5.两表关联， Lookup Join 通常在 Flink SQL 表和外部系统查询结果关联时使用。
         Table resultTable = tableEnv.sqlQuery("" +
@@ -130,4 +145,5 @@ public class Dwd31_TestPaper {
 
 
     }
+
 }
