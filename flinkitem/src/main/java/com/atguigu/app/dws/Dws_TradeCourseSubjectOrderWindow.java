@@ -46,14 +46,14 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.atguigu.app.func.DimAsyncFunction;
 import com.atguigu.bean.TradeCourseSubjectOrderBean;
+import com.atguigu.bean.TrafficTimeBean;
 import com.atguigu.utils.DateFormatUtil;
+import com.atguigu.utils.MyApplyUtil;
+import com.atguigu.utils.MyClickHouseUtil;
 import com.atguigu.utils.MyKafkaUtil;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
-import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.common.functions.ReduceFunction;
-import org.apache.flink.api.common.functions.RichFlatMapFunction;
-import org.apache.flink.api.common.functions.RichReduceFunction;
+import org.apache.flink.api.common.functions.*;
 import org.apache.flink.api.common.state.StateTtlConfig;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
@@ -104,10 +104,10 @@ public class Dws_TradeCourseSubjectOrderWindow {
         }));
 
 //        //TODO 5.按照 course_id 分组
-//        KeyedStream<JSONObject, String> keyedDS = jsonObjWMDS.keyBy(json -> json.getString("course_id"));
+        KeyedStream<JSONObject, String> keyedDS = jsonObjWMDS.keyBy(json -> json.getString("course_id"));
 
         //TODO 5.按照订单明细ID分组
-        KeyedStream<JSONObject, String> keyedDS = jsonObjWMDS.keyBy(json -> json.getString("id"));
+//        KeyedStream<JSONObject, String> keyedDS = jsonObjWMDS.keyBy(json -> json.getString("id"));
 
         //TODO 6.去重并转换为 TradeCourseSubjectOrderBean 对象
         SingleOutputStreamOperator<TradeCourseSubjectOrderBean> beanDS = keyedDS.flatMap(new RichFlatMapFunction<JSONObject, TradeCourseSubjectOrderBean>() {
@@ -131,18 +131,21 @@ public class Dws_TradeCourseSubjectOrderWindow {
             public void flatMap(JSONObject value, Collector<TradeCourseSubjectOrderBean> out) throws Exception {
 
                 String state = valueState.value();
-
-                if (state==null){
+                long userCt = 0L;
+                if (state == null) {
+                    userCt = 1L;
                     valueState.update("1");
 
                     //获取课程下单人数
 //                    Long courseOrderUserCt=1L;
                     //获取课程下单金额
-                    BigDecimal courseOrderAmount=value.getBigDecimal("final_amount");
+                    BigDecimal courseOrderAmount = value.getBigDecimal("final_amount");
 
                     out.collect(TradeCourseSubjectOrderBean.builder()
                             .courseId(value.getString("course_id"))
                             .courseName(value.getString("course_name"))
+                            .userId(value.getString("user_id"))
+//                            .courseOrderUserCt(userCt)
                             .courseOrderUserCt(1L)
                             .courseOrderAmount(courseOrderAmount)
                             .subOrderCt(0L)
@@ -154,7 +157,11 @@ public class Dws_TradeCourseSubjectOrderWindow {
             }
         });
 
-        //TODO 7.1关联维表 DIM_COURSE_INFO 得到 SUBJECT_ID
+        //course_id
+
+
+//
+//        //TODO 7.1关联维表 DIM_COURSE_INFO 得到 SUBJECT_ID
         SingleOutputStreamOperator<TradeCourseSubjectOrderBean> subjectIDDS = AsyncDataStream.unorderedWait(beanDS,
                 new DimAsyncFunction<TradeCourseSubjectOrderBean>("DIM_COURSE_INFO") {
                     @Override
@@ -168,7 +175,7 @@ public class Dws_TradeCourseSubjectOrderWindow {
 
                     }
                 }, 60, TimeUnit.SECONDS);
-
+//
         //TODO 7.2关联维表 DIM_BASE_SUBJECT_INFO 得到 SUBJECT_NAME
         SingleOutputStreamOperator<TradeCourseSubjectOrderBean> subjectNMDS = AsyncDataStream.unorderedWait(subjectIDDS,
                 new DimAsyncFunction<TradeCourseSubjectOrderBean>("DIM_BASE_SUBJECT_INFO") {
@@ -184,57 +191,97 @@ public class Dws_TradeCourseSubjectOrderWindow {
                     }
                 }, 60, TimeUnit.SECONDS);
 
-        subjectNMDS.print("subjectNMDS>>>");
+
 
         //TODO 8.按照 course_id 分组 开窗 聚合
-        SingleOutputStreamOperator<TradeCourseSubjectOrderBean> resultDS = subjectNMDS.keyBy(TradeCourseSubjectOrderBean::getSubjectId)
+        SingleOutputStreamOperator<TradeCourseSubjectOrderBean> resultDS = subjectNMDS.keyBy(TradeCourseSubjectOrderBean::getCourseId)
                 .window(TumblingEventTimeWindows.of(org.apache.flink.streaming.api.windowing.time.Time.seconds(10)))
-                .reduce(new RichReduceFunction<TradeCourseSubjectOrderBean>() {
-
-                    private ValueState<String> valueState;
-
-                    @Override
-                    public void open(Configuration parameters) throws Exception {
-                        super.open(parameters);
-
-                        StateTtlConfig ttlConfig = new StateTtlConfig.Builder(Time.seconds(5))
-                                .setUpdateType(StateTtlConfig.UpdateType.OnReadAndWrite)
-                                .build();
-
-                        ValueStateDescriptor<String> stateDescriptor = new ValueStateDescriptor<>("value-state", String.class);
-                        stateDescriptor.enableTimeToLive(ttlConfig);
-
-                        valueState = getRuntimeContext().getState(stateDescriptor);
-
-                    }
-
+                .reduce(new ReduceFunction<TradeCourseSubjectOrderBean>() {
                     @Override
                     public TradeCourseSubjectOrderBean reduce(TradeCourseSubjectOrderBean value1, TradeCourseSubjectOrderBean value2) throws Exception {
 
-                        value1.setCourseOrderUserCt(value1.getCourseOrderUserCt()+value2.getCourseOrderUserCt());
+                        value1.setCourseOrderUserCt(value1.getCourseOrderUserCt() + value2.getCourseOrderUserCt());
+
                         value1.setCourseOrderAmount(value1.getCourseOrderAmount().add(value2.getCourseOrderAmount()));
-
-//                        if (){
-//
-//                        }
-
                         return value1;
                     }
                 }, new WindowFunction<TradeCourseSubjectOrderBean, TradeCourseSubjectOrderBean, String, TimeWindow>() {
-
                     @Override
                     public void apply(String s, TimeWindow window, Iterable<TradeCourseSubjectOrderBean> input, Collector<TradeCourseSubjectOrderBean> out) throws Exception {
 
                         TradeCourseSubjectOrderBean next = input.iterator().next();
 
-                        next.setTs(System.currentTimeMillis());
                         next.setEdt(DateFormatUtil.toYmdHms(window.getEnd()));
                         next.setStt(DateFormatUtil.toYmdHms(window.getStart()));
 
+
+                        //输出数据
                         out.collect(next);
+
+
+
 
                     }
                 });
+
+
+        //subject_id 分组
+        SingleOutputStreamOperator<TradeCourseSubjectOrderBean> reduce = resultDS.keyBy(TradeCourseSubjectOrderBean::getSubjectId)
+                .map(new RichMapFunction<TradeCourseSubjectOrderBean, TradeCourseSubjectOrderBean>() {
+
+                    private ValueState<String> valueState;
+
+                    @Override
+                    public void open(Configuration parameters) throws Exception {
+
+                        StateTtlConfig ttlConfig = new StateTtlConfig.Builder(Time.seconds(5))
+                                .setUpdateType(StateTtlConfig.UpdateType.OnReadAndWrite)
+                                .build();
+
+                        ValueStateDescriptor<String> stateDescriptor = new ValueStateDescriptor<>("subject-state", String.class);
+                        stateDescriptor.enableTimeToLive(ttlConfig);
+
+                        valueState = getRuntimeContext().getState(stateDescriptor);
+                    }
+
+                    @Override
+                    public TradeCourseSubjectOrderBean map(TradeCourseSubjectOrderBean value) throws Exception {
+
+                        String lastDt = valueState.value();
+
+                        String curDt = DateFormatUtil.toDate(value.getTs());
+
+                        if (lastDt == null || !lastDt.equals(curDt)) {
+                            value.setSubOrderUserCt(1L);
+                            valueState.update(curDt);
+                        }
+                        value.setSubOrderCt(1L);
+                        value.setSubOrderAmount(value.getCourseOrderAmount());
+
+                        return value;
+
+
+                    }
+                })
+                .keyBy(TradeCourseSubjectOrderBean::getSubjectId)
+                .reduce(new ReduceFunction<TradeCourseSubjectOrderBean>() {
+                    @Override
+                    public TradeCourseSubjectOrderBean reduce(TradeCourseSubjectOrderBean value1, TradeCourseSubjectOrderBean value2) throws Exception {
+                        value1.setSubOrderCt(value1.getSubOrderCt() + value2.getSubOrderCt());
+
+                        value1.setSubOrderUserCt(value1.getSubOrderUserCt() + value2.getSubOrderUserCt());
+
+                        value1.setSubOrderAmount(value1.getSubOrderAmount().add(value2.getSubOrderAmount()));
+
+                        return value1;
+                    }
+                });
+
+
+        reduce.print("resultDS>>>");
+
+        reduce.addSink(MyClickHouseUtil.getSinkFunction("insert into dws_trade_course_subject_order_window values(?,?,?,?,?,?,?,?,?,?,?,?)"));
+
 
         //执行
         env.execute("Dws_TradeCourseSubjectOrderWindow");

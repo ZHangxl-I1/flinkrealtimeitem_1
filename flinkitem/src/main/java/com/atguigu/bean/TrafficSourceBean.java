@@ -34,7 +34,8 @@ public class TrafficSourceBean {
     @TransientSink
     String pageId;
     //独立访客数
-    Long uvCt;
+    @Builder.Default
+    Long uvCt=0L;
     //会话总数
     @Builder.Default
     Long svCt = 0L;
@@ -48,7 +49,8 @@ public class TrafficSourceBean {
     @Builder.Default
     Long pageOneCt=0L;
     // 累计访问时长
-    Long durSum;
+    @Builder.Default
+    Long durSum=0L;
     // 时间戳
     Long ts;
 }

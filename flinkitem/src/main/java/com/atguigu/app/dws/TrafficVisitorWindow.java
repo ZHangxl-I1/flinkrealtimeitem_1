@@ -10,4 +10,11 @@ package com.atguigu.app.dws;
  * @Version 1.2
  */
 public class TrafficVisitorWindow {
+    public static void main(String[] args) {
+
+
+
+
+
+    }
 }
