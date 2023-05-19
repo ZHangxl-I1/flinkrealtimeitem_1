@@ -7,6 +7,7 @@ import com.atguigu.bean.VideoPlayBean;
 import com.atguigu.common.EDUConfig;
 import com.atguigu.utils.DateFormatUtil;
 import com.atguigu.utils.MyApplyUtil;
+import com.atguigu.utils.MyClickHouseUtil;
 import com.atguigu.utils.MyKafkaUtil;
 
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
@@ -138,7 +139,7 @@ public class VideoPlayWindow {
             @Override
             public void open(Configuration parameters) throws Exception {
 
-                StateTtlConfig ttlConfig = new StateTtlConfig.Builder(Time.days(1))
+                StateTtlConfig ttlConfig = new StateTtlConfig.Builder(Time.hours(1))
                         .setUpdateType(StateTtlConfig.UpdateType.OnReadAndWrite)
                         .build();
 
@@ -152,6 +153,7 @@ public class VideoPlayWindow {
             @Override
             public VideoPlayBean map(VideoPlayBean value) throws Exception {
                 String lastDt = valueState.value();
+
                 String curDt = DateFormatUtil.toDate(value.getTs());
 
                 if (lastDt == null || !lastDt.equals(curDt)) {
@@ -182,7 +184,6 @@ public class VideoPlayWindow {
 
 
 
-
         //分组开窗聚合
         SingleOutputStreamOperator<VideoPlayBean> reduceDS = videoPlayChapterDS.keyBy(VideoPlayBean::getChapterId)
                 .window(TumblingEventTimeWindows.of(org.apache.flink.streaming.api.windowing.time.Time.seconds(10)))
@@ -204,12 +205,43 @@ public class VideoPlayWindow {
                 }, new MyApplyUtil.MyWindowUtil<VideoPlayBean, String>());
 
 
+        //关联dim_chapter_info
+        SingleOutputStreamOperator<VideoPlayBean> videoPlayChapterNameDS = AsyncDataStream.unorderedWait(reduceDS, new DimAsyncFunction<VideoPlayBean>("DIM_CHAPTER_INFO") {
+            @Override
+            public String getKey(VideoPlayBean input) throws Exception {
+                return input.getChapterId();
+            }
+
+            @Override
+            public void join(VideoPlayBean input, JSONObject dimInfo) throws Exception {
+                input.setChapterName(dimInfo.getString("CHAPTER_NAME"));
+
+            }
+        }, 60, TimeUnit.SECONDS);
 
 
-        reduceDS.print("reduceDS>>>>");
+        videoPlayChapterNameDS.print("videoPlayChapterNameDS>>>>");
+
+
+        videoPlayChapterNameDS.addSink(MyClickHouseUtil.getSinkFunction("insert into dws_video_info_window values(?,?,?,?,?,?,?)"));
 
 
         env.execute();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //        //按照视频id分组
 //        KeyedStream<JSONObject, String> keyedByVideoIdDS = jsonObjDS.keyBy(json -> json.getJSONObject("appVideo").getString("video_id"));

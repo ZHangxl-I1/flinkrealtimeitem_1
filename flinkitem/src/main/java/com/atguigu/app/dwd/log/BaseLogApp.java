@@ -106,13 +106,11 @@ public class BaseLogApp {
 
 
             private ValueState<String> lastDtState;
-
             @Override
             public void open(Configuration parameters) throws Exception {
                 lastDtState = getRuntimeContext().getState(new ValueStateDescriptor<String>("last-state", String.class));
 
             }
-
             @Override
             public JSONObject map(JSONObject value) throws Exception {
 
@@ -126,7 +124,6 @@ public class BaseLogApp {
                 Long ts = value.getLong("ts");
                 String curDt = DateFormatUtil.toDate(ts);
 
-
                 //判断is_new
 
                 if ("1".equals(isNew)) {
@@ -139,7 +136,6 @@ public class BaseLogApp {
                         value.getJSONObject("common").put("is_new", "0");
                     }
 
-
                 } else {
 
                     if (lastDt == null) {
@@ -148,12 +144,10 @@ public class BaseLogApp {
 
                     }
 
-
                 }
 
                 return value;
             }
-
 
         });
 

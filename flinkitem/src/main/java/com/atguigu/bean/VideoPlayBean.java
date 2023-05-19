@@ -22,6 +22,7 @@ public class VideoPlayBean {
     // 窗口关闭时间
     String edt;
     //章节id
+    @TransientSink
     String chapterId;
     //章节名称
     String chapterName;
