@@ -26,12 +26,12 @@ create table if not exists dws_trade_course_subject_order_window
     course_id String comment '课程id',
     course_name String comment '课程名称',
     course_order_user_ct UInt64 comment '课程下单人数',
-    course_order_amount UInt64 comment '课程下单金额',
+    course_order_amount Decimal(38, 20) comment '课程下单金额',
     subject_id String comment '学科id',
     subject_name String comment '学科名称',
     sub_order_ct    UInt64 COMMENT '学科下单次数',
     sub_order_user_ct    UInt64 COMMENT '学科下单人数',
-    sub_order_amount    UInt64 COMMENT '学科下单金额',
+    sub_order_amount    Decimal(38, 20) COMMENT '学科下单金额',
     ts                           UInt64 COMMENT '时间戳'
 ) engine = ReplacingMergeTree(ts)
       partition by toYYYYMMDD(stt)
