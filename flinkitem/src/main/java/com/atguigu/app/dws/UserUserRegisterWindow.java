@@ -83,7 +83,7 @@ public class UserUserRegisterWindow {
 
         //TODO 5.将数据写出
         resultDS.print(">>>>>>>>");
-        resultDS.addSink(MyClickHouseUtil.getSinkFunction("insert into dws_user_user_register_window values(?,?,?,?)"));
+//        resultDS.addSink(MyClickHouseUtil.getSinkFunction("insert into dws_user_user_register_window values(?,?,?,?)"));
 
         //TODO 6.启动任务
         env.execute("Dws_UserUserRegisterWindow");

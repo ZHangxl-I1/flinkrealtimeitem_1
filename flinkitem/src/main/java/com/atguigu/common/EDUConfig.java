@@ -64,7 +64,7 @@ public class EDUConfig {
     //课程评价
     public static final String DWD_REVIEW_ADD = "dwd_review_add";
     //评价
-    public static final String dwd_interaction_comment_add = "dwd_interaction_comment_add";
+    public static final String DWD_INTERACTION_COMMENT_ADD = "dwd_interaction_comment_add";
     //用户注册
     public static final String DWD_USER_REGISTER = "dwd_user_register";
     //vip

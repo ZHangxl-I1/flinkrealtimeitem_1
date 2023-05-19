@@ -25,7 +25,7 @@ public class DimUtil {
         }
 
         //拼接SQL
-        String sql = "select * from " + EDUConfig.HBASE_SCHEMA + "." + tableName + " where id='" + id + "'";
+        String sql = "select * from " + EDUConfig.HBASE_SCHEMA + "." + tableName.toUpperCase() + " where id='" + id + "'";
         System.out.println("查询SQL为：" + sql);
 
         List<JSONObject> jsonObjects = JdbcUtil.queryList(connection,
