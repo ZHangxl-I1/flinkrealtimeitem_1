@@ -10,9 +10,7 @@ import com.atguigu.utils.MyClickHouseUtil;
 import com.atguigu.utils.MyKafkaUtil;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
-import org.apache.flink.api.common.functions.ReduceFunction;
-import org.apache.flink.api.common.functions.RichFlatMapFunction;
-import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.common.functions.*;
 import org.apache.flink.api.common.state.*;
 import org.apache.flink.api.common.time.Time;
 import org.apache.flink.api.java.functions.KeySelector;
@@ -23,10 +21,13 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.streaming.api.functions.windowing.WindowFunction;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.table.planner.expressions.In;
 import org.apache.flink.util.Collector;
+import scala.Int;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -127,6 +128,7 @@ public class TrafficSourceWindow {
                 }
 
                 return TrafficSourceBean.builder()
+                        .page(value.getJSONObject("page"))
                         .pageId(value.getJSONObject("page").getString("page_id"))
                         .sid(value.getJSONObject("common").getString("sid"))
                         .sc(value.getJSONObject("common").getString("sc"))
@@ -136,6 +138,35 @@ public class TrafficSourceWindow {
                         .build();
             }
         });
+//        SingleOutputStreamOperator<Integer> sidcount = keyedByMidDS.filter(new FilterFunction<JSONObject>() {
+//                    @Override
+//                    public boolean filter(JSONObject value) throws Exception {
+//                        JSONObject page = value.getJSONObject("page");
+//                        return page != null && page.size() == 1;
+//                    }
+//                }).map(json -> json.getJSONObject("common").getString("sid"))
+//                .keyBy(sid -> sid)
+//                .process(new ProcessFunction<String, Integer>() {
+//                    private transient ValueState<Integer> sessionCountState;
+//
+//                    @Override
+//                    public void open(Configuration parameters) throws Exception {
+//                        ValueStateDescriptor<Integer> stateDescriptor = new ValueStateDescriptor<>("sessionCount", Integer.class);
+//                        sessionCountState = getRuntimeContext().getState(stateDescriptor);
+//                    }
+//
+//                    @Override
+//                    public void processElement(String sid, Context context, Collector<Integer> collector) throws Exception {
+//                        Integer count = sessionCountState.value();
+//                        if (count == null) {
+//                            count = 1;
+//                        } else {
+//                            count++;
+//                        }
+//                        sessionCountState.update(count);
+//                        collector.collect(count);
+//                    }
+//                });
 
 
         //按照sid分组
@@ -153,8 +184,6 @@ public class TrafficSourceWindow {
                         .build();
                 stateDescriptor.enableTimeToLive(ttlConfig);
                 valueState = getRuntimeContext().getState(stateDescriptor);
-
-
             }
 
             @Override
@@ -163,84 +192,170 @@ public class TrafficSourceWindow {
                 if (state == null) {
                     value.setSvCt(1L);
                     valueState.update("1");
+                    if (value.getPage().getString("item_type") == null && value.getPage().getString("last_page_id") == null){
+                        value.setPageOneCt(1L);
+                    }
 
                 }
                 value.setPageCt(1L);
+
                 return value;
             }
+
+
         });
 
-        //按sid，和pageid分组
-        KeyedStream<TrafficSourceBean, Tuple2<String, String>> trafficSourceBeanTuple2KeyedStream = trafficSourceSidDS.keyBy(new KeySelector<TrafficSourceBean, Tuple2<String, String>>() {
-            @Override
-            public Tuple2<String, String> getKey(TrafficSourceBean value) throws Exception {
-                return new Tuple2<String, String>(value.getSid(), value.getPageId());
-            }
-        });
+//        SingleOutputStreamOperator<Tuple2<TrafficSourceBean, Long>> tuple2SingleOutputStreamOperator = trafficSourceSidDS.flatMap(new FlatMapFunction<TrafficSourceBean, Tuple2<TrafficSourceBean, Long>>() {
+//            @Override
+//            public void flatMap(TrafficSourceBean value, Collector<Tuple2<TrafficSourceBean, Long>> out) throws Exception {
+//
+//                out.collect(Tuple2.of(value, 1L));
+//
+//            }
+//        });
+//
+//        SingleOutputStreamOperator<Tuple2<TrafficSourceBean, Long>> sumDS = tuple2SingleOutputStreamOperator.keyBy(tuple -> tuple.f0)
+//                .sum(1);
+//
+//
+//        SingleOutputStreamOperator<TrafficSourceBean> trafficSourceBeanDS =sumDS.map(new RichMapFunction<Tuple2<TrafficSourceBean, Long>, TrafficSourceBean>() {
+//            @Override
+//            public TrafficSourceBean map(Tuple2<TrafficSourceBean, Long> value) throws Exception {
+//                long pageOne=0L;
+//               if (value.f1==1L){
+//                   pageOne=1L;
+//               }
+//
+//                return TrafficSourceBean.builder()
+//                        .sc(value.f0.getSc())
+//                        .uvCt(value.f0.getUvCt())
+//                        .svCt(value.f0.getSvCt())
+//                        .pageCt(value.f0.getPageCt())
+//                        .pageOneCt(pageOne)
+//                        .ts(value.f0.getTs())
+//                        .build();
+//            }
+//        });
 
 
-        SingleOutputStreamOperator<TrafficSourceBean> trafficSourcePageIdDS = trafficSourceBeanTuple2KeyedStream.flatMap(new RichFlatMapFunction<TrafficSourceBean, TrafficSourceBean>() {
+//        //按sid，和pageid分组
+//        KeyedStream<TrafficSourceBean, Tuple2<String, String>> trafficSourceBeanTuple2KeyedStream = trafficSourceSidDS.keyBy(new KeySelector<TrafficSourceBean, Tuple2<String, String>>() {
+//            @Override
+//            public Tuple2<String, String> getKey(TrafficSourceBean value) throws Exception {
+//                return new Tuple2<String, String>(value.getSid(), value.getPageId());
+//            }
+//        });
+//
+//
+//
+//
+//        SingleOutputStreamOperator<TrafficSourceBean> trafficSourcePageIdDS = trafficSourceBeanTuple2KeyedStream.map(new RichMapFunction<TrafficSourceBean, TrafficSourceBean>() {
+//
+//            //            private ValueState<String> valueState;
+//            private MapState<String, Long> mapState;
+//
+//            @Override
+//            public void open(Configuration parameters) throws Exception {
+//
+//                StateTtlConfig ttlConfig = new StateTtlConfig.Builder(Time.hours(1))
+//                        .setUpdateType(StateTtlConfig.UpdateType.OnReadAndWrite)
+//                        .build();
+//
+//
+////                ValueStateDescriptor<String> stateDescriptor = new ValueStateDescriptor<>("sid-page-state", String.class);
+////                stateDescriptor.enableTimeToLive(ttlConfig);
+////                valueState = getRuntimeContext().getState(stateDescriptor);
+//
+//
+//                MapStateDescriptor<String, Long> mapStateDescriptor = new MapStateDescriptor<>("pageId-state", String.class, Long.class);
+//                mapStateDescriptor.enableTimeToLive(ttlConfig);
+//                mapState = getRuntimeContext().getMapState(mapStateDescriptor);
+//            }
+//
+//            @Override
+//            public TrafficSourceBean map(TrafficSourceBean value) throws Exception {
+//                //              String state = valueState.value();
+//                String pageId = value.getPageId();
+//                String sid = value.getSid();
+//                String key = pageId + "-" + sid;
+//
+////                value.setPageOne(1L);
+////                valueState.update(key);
+////                mapState.put(key,1L);
+//
+//                if (mapState.contains(key)) {
+//                    Long lastCt = mapState.get(key);
+//                    lastCt = lastCt + 1;
+//                    mapState.put(key, lastCt);
+//                } else {
+//                    mapState.put(key, 1L);
+//                }
+//
+////                long pageOne = 0L;
+//
+//                for (Long aLong : mapState.values()) {
+//                    if (aLong == 1L) {
+//                        value.setPageOneCt(1L);
+//                    }
+//                    mapState.remove(key);
+//
+//                }
+////                System.out.println("pageOne>>>"+pageOne);
+//
+//
+//                return value;
+//
+//            }
+//
+//
+//        });
 
-            //            private ValueState<String> valueState;
-            private MapState<String, Long> mapState;
+//        trafficSourcePageIdDS.print("trafficSourcePageIdDS>>>");
 
-            @Override
-            public void open(Configuration parameters) throws Exception {
-
-                StateTtlConfig ttlConfig = new StateTtlConfig.Builder(Time.hours(1))
-                        .setUpdateType(StateTtlConfig.UpdateType.OnReadAndWrite)
-                        .build();
-
-
-//                ValueStateDescriptor<String> stateDescriptor = new ValueStateDescriptor<>("sid-page-state", String.class);
-//                stateDescriptor.enableTimeToLive(ttlConfig);
-//                valueState = getRuntimeContext().getState(stateDescriptor);
-
-
-                MapStateDescriptor<String, Long> mapStateDescriptor = new MapStateDescriptor<>("pageId-state", String.class, Long.class);
-                mapStateDescriptor.enableTimeToLive(ttlConfig);
-                mapState = getRuntimeContext().getMapState(mapStateDescriptor);
-            }
-
-            @Override
-            public void flatMap(TrafficSourceBean value, Collector<TrafficSourceBean> out) throws Exception {
-                //              String state = valueState.value();
-                String pageId = value.getPageId();
-                String sid = value.getSid();
-                String key = pageId + "-" + sid;
-
-//                value.setPageOne(1L);
-//                valueState.update(key);
-//                mapState.put(key,1L);
-
-                if (mapState.contains(key)) {
-                    Long lastCt = mapState.get(key);
-                    lastCt = lastCt + 1;
-                    mapState.put(key, lastCt);
-                } else {
-                    mapState.put(key, 1L);
-                }
-
-                long pageOne = 0L;
-
-                    for (Long aLong : mapState.values()) {
-                        if (aLong == 1L) {
-                            pageOne++;
-                        }
-                    }
-                System.out.println("pageOne>>>"+pageOne);
-
-                    out.collect(TrafficSourceBean.builder()
-                                    .pageOneCt(pageOne)
-                            .build());
+//        SingleOutputStreamOperator<TrafficSourceBean> processed = trafficSourceSidDS.filter(new FilterFunction<TrafficSourceBean>() {
+//                    @Override
+//                    public boolean filter(TrafficSourceBean value) throws Exception {
+//                        return value.getPage().getString("item_type") == null && value.getPage().getString("last_page_id") == null;
+//                    }
+//                })
+//                .keyBy(TrafficSourceBean::getSid)
+//                .process(new ProcessFunction<TrafficSourceBean, TrafficSourceBean>() {
+//
+//                    private transient ValueState<Integer> sessionCountState;
+//
+//                    @Override
+//                    public void open(Configuration parameters) throws Exception {
+//
+//                        ValueStateDescriptor<Integer> stateDescriptor = new ValueStateDescriptor<>("sessionCount", Integer.class);
+//                        sessionCountState = getRuntimeContext().getState(stateDescriptor);
+//                    }
+//
+//                    @Override
+//                    public void processElement(TrafficSourceBean value, ProcessFunction<TrafficSourceBean, TrafficSourceBean>.Context ctx, Collector<TrafficSourceBean> out) throws Exception {
+//
+//                        Integer count = sessionCountState.value();
+//                        if (count == null) {
+//                            count = 1;
+//                        } else {
+//                            count++;
+//                        }
+//                        sessionCountState.update(count);
+//                        System.out.println("count>>>" + count);
+//
+//                        out.collect(TrafficSourceBean.builder()
+//                                .uvCt(value.getUvCt())
+//                                .svCt(value.getSvCt())
+//                                .sc(value.getSc())
+//                                .pageCt(value.getPageCt())
+//                                .durSum(value.getDurSum())
+//                                .pageOneCt(Long.valueOf(count))
+//                                .build());
+//
+//                    }
+//                });
 
 
-            }
-        });
-
-
-
-        SingleOutputStreamOperator<TrafficSourceBean> reduceDS = trafficSourcePageIdDS.assignTimestampsAndWatermarks(WatermarkStrategy.<TrafficSourceBean>forBoundedOutOfOrderness(Duration.ofSeconds(2)).withTimestampAssigner(new SerializableTimestampAssigner<TrafficSourceBean>() {
+        SingleOutputStreamOperator<TrafficSourceBean> reduceDS = trafficSourceSidDS.assignTimestampsAndWatermarks(WatermarkStrategy.<TrafficSourceBean>forBoundedOutOfOrderness(Duration.ofSeconds(2)).withTimestampAssigner(new SerializableTimestampAssigner<TrafficSourceBean>() {
                     @Override
                     public long extractTimestamp(TrafficSourceBean element, long recordTimestamp) {
                         return element.getTs();
@@ -259,11 +374,9 @@ public class TrafficSourceWindow {
 
 //                        value1.setPageOne(value1.getPageOne() + value2.getPageOne());
 
-                        value1.setPageOneCt(value1.getPageOneCt()+ value2.getPageOneCt());
-
+                        value1.setPageOneCt(value1.getPageOneCt() + value2.getPageOneCt());
 
                         value1.setPageCt(value1.getPageCt() + value2.getPageCt());
-
 
                         value1.setDurSum(value1.getDurSum() + value2.getDurSum());
 
@@ -275,12 +388,6 @@ public class TrafficSourceWindow {
                         //取出数据
                         TrafficSourceBean next = input.iterator().next();
 
-//                        long pageOne = 0L;
-//                        if (next.getPageOne() == 1L) {
-//                            pageOne++;
-//                        }
-//                        next.setPageOneCt(pageOne);
-
                         next.setEdt(DateFormatUtil.toYmdHms(window.getEnd()));
                         next.setStt(DateFormatUtil.toYmdHms(window.getStart()));
                         next.setTs(System.currentTimeMillis());
@@ -288,9 +395,9 @@ public class TrafficSourceWindow {
                         //输出数据
                         out.collect(next);
 
-
                     }
                 });
+
 
         //关联来源表dim_base_source
         SingleOutputStreamOperator<TrafficSourceBean> resultDS = AsyncDataStream.unorderedWait(reduceDS, new DimAsyncFunction<TrafficSourceBean>("DIM_BASE_SOURCE") {
@@ -310,9 +417,7 @@ public class TrafficSourceWindow {
 
         resultDS.print("resultDS>>>>");
 
-
-//        resultDS.addSink(MyClickHouseUtil.getSinkFunction("insert into dws_traffic_source_window values(?,?,?,?,?,?,?,?,?)"));
-
+        resultDS.addSink(MyClickHouseUtil.getSinkFunction("insert into dws_traffic_source_window values(?,?,?,?,?,?,?,?,?)"));
 
         env.execute();
 

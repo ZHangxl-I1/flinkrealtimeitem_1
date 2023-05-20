@@ -4,28 +4,28 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import org.apache.flink.api.java.tuple.Tuple2;
 
 /**
- * ClassName: TradeSourceBean
+ * ClassName: TrafficVisitorBean
  * Package: com.atguigu.bean
  * Description:
  *
  * @Author fajun-mei
- * @Create 2023/5/17 10:05
+ * @Create 2023/5/19 21:18
  * @Version 1.2
  */
 @Data
 @AllArgsConstructor
 @Builder
-public class TrafficSourceBean {
+public class TrafficVisitorBean {
+
     // 窗口起始时间
     String stt;
     // 窗口关闭时间
     String edt;
     //来源
     @TransientSink
-    String sc;
+    String isNew;
     //来源名称
     String sourceName;
     @TransientSink
@@ -56,4 +56,6 @@ public class TrafficSourceBean {
     Long durSum=0L;
     // 时间戳
     Long ts;
+
+
 }
