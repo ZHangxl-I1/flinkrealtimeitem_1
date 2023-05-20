@@ -122,51 +122,51 @@ public class TrafficVisitorWindow {
 
 
 
-        //按照mid 分组
-        KeyedStream<JSONObject, String> keyedByMidDS = jsonObjDS.keyBy(json -> json.getJSONObject("common").getString("mid"));
-
-
-        SingleOutputStreamOperator<TrafficSourceBean> trafficSourceMidDS = keyedByMidDS.map(new RichMapFunction<JSONObject, TrafficSourceBean>() {
-
-
-            private ValueState<String> valueState;
-
-            @Override
-            public void open(Configuration parameters) throws Exception {
-
-                StateTtlConfig ttlConfig = new StateTtlConfig.Builder(Time.days(1))
-                        .setUpdateType(StateTtlConfig.UpdateType.OnReadAndWrite)
-                        .build();
-
-                ValueStateDescriptor<String> stateDescriptor = new ValueStateDescriptor<>("mid-state", String.class);
-
-                stateDescriptor.enableTimeToLive(ttlConfig);
-                valueState = getRuntimeContext().getState(stateDescriptor);
-
-            }
-
-            @Override
-            public TrafficSourceBean map(JSONObject value) throws Exception {
-
-                String lastDt = valueState.value();
-                long uvCt = 0L;
-                if (lastDt == null) {
-                    uvCt = 1L;
-                    valueState.update("1");
-                }
-
-                return TrafficSourceBean.builder()
-                        .page(value.getJSONObject("page"))
-                        .pageId(value.getJSONObject("page").getString("page_id"))
-                        .sid(value.getJSONObject("common").getString("sid"))
-                        .sc(value.getJSONObject("common").getString("sc"))
-                        .uvCt(uvCt)
-                        .ts(value.getLong("ts"))
-                        .durSum(value.getJSONObject("page").getLong("during_time"))
-                        .build();
-            }
-        });
-
+//        //按照mid 分组
+//        KeyedStream<JSONObject, String> keyedByMidDS = jsonObjDS.keyBy(json -> json.getJSONObject("common").getString("mid"));
+//
+//
+//        SingleOutputStreamOperator<TrafficSourceBean> trafficSourceMidDS = keyedByMidDS.map(new RichMapFunction<JSONObject, TrafficSourceBean>() {
+//
+//
+//            private ValueState<String> valueState;
+//
+//            @Override
+//            public void open(Configuration parameters) throws Exception {
+//
+//                StateTtlConfig ttlConfig = new StateTtlConfig.Builder(Time.days(1))
+//                        .setUpdateType(StateTtlConfig.UpdateType.OnReadAndWrite)
+//                        .build();
+//
+//                ValueStateDescriptor<String> stateDescriptor = new ValueStateDescriptor<>("mid-state", String.class);
+//
+//                stateDescriptor.enableTimeToLive(ttlConfig);
+//                valueState = getRuntimeContext().getState(stateDescriptor);
+//
+//            }
+//
+//            @Override
+//            public TrafficSourceBean map(JSONObject value) throws Exception {
+//
+//                String lastDt = valueState.value();
+//                long uvCt = 0L;
+//                if (lastDt == null) {
+//                    uvCt = 1L;
+//                    valueState.update("1");
+//                }
+//
+//                return TrafficSourceBean.builder()
+//                        .page(value.getJSONObject("page"))
+//                        .pageId(value.getJSONObject("page").getString("page_id"))
+//                        .sid(value.getJSONObject("common").getString("sid"))
+//                        .sc(value.getJSONObject("common").getString("sc"))
+//                        .uvCt(uvCt)
+//                        .ts(value.getLong("ts"))
+//                        .durSum(value.getJSONObject("page").getLong("during_time"))
+//                        .build();
+//            }
+//        });
+//
 
 
 
