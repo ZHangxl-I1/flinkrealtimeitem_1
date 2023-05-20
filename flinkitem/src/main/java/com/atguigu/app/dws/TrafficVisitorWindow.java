@@ -82,41 +82,41 @@ public class TrafficVisitorWindow {
         SingleOutputStreamOperator<JSONObject> jsonObjDS = kafkaDS.map(JSON::parseObject);
 
         //清洗is_new字
-        KeyedStream<JSONObject, String> keyedStream = jsonObjDS.keyBy(json -> json.getJSONObject("common").getString("user_id"));
-
-        SingleOutputStreamOperator<TrafficVisitorBean> tradeOrderDS = keyedStream.flatMap(new RichFlatMapFunction<JSONObject, TrafficVisitorBean>() {
-
-            private ValueState<String> valueState;
-
-            @Override
-            public void open(Configuration parameters) throws Exception {
-                valueState = getRuntimeContext().getState(new ValueStateDescriptor<String>("visitor-state", String.class));
-            }
-
-            @Override
-            public void flatMap(JSONObject value, Collector<TrafficVisitorBean> out) throws Exception {
-
-                //取出状态数据以及当前数据日期
-                String lastDt = valueState.value();
-                String curDt = value.getString("ts");
-
-                long ct = 0L;
-                long newCt = 0L;
-
-                if (lastDt == null) {
-                    ct = 1L;
-                    newCt = 1L;
-                    valueState.update(curDt);
-                } else if (!lastDt.equals(curDt)) {
-                    ct = 1L;
-                    valueState.update(curDt);
-                }
-
-                if (ct == 1L) {
-                    out.collect());
-                }
-            }
-        });
+//        KeyedStream<JSONObject, String> keyedStream = jsonObjDS.keyBy(json -> json.getJSONObject("common").getString("user_id"));
+//
+//        SingleOutputStreamOperator<TrafficVisitorBean> tradeOrderDS = keyedStream.flatMap(new RichFlatMapFunction<JSONObject, TrafficVisitorBean>() {
+//
+//            private ValueState<String> valueState;
+//
+//            @Override
+//            public void open(Configuration parameters) throws Exception {
+//                valueState = getRuntimeContext().getState(new ValueStateDescriptor<String>("visitor-state", String.class));
+//            }
+//
+//            @Override
+//            public void flatMap(JSONObject value, Collector<TrafficVisitorBean> out) throws Exception {
+//
+//                //取出状态数据以及当前数据日期
+//                String lastDt = valueState.value();
+//                String curDt = value.getString("ts");
+//
+//                long ct = 0L;
+//                long newCt = 0L;
+//
+//                if (lastDt == null) {
+//                    ct = 1L;
+//                    newCt = 1L;
+//                    valueState.update(curDt);
+//                } else if (!lastDt.equals(curDt)) {
+//                    ct = 1L;
+//                    valueState.update(curDt);
+//                }
+//
+//                if (ct == 1L) {
+//                    out.collect());
+//                }
+//            }
+//        });
 
 
 
